@@ -40,19 +40,19 @@ def connect(ip, port_ssh, username, password):
 def transfer_file(sftp, direction, source_path, destination_path):
     if direction == "send":
         # Upload the file
-        file = source_path.split("/")[-1]
-        remote_path = os.path.join(destination_path, file)
-        local_path = source_path
+        file = os.path.basename(source_path)
+        remote_path = os.path.join(destination_path, file).replace("\\", "/")
+        local_path = source_path.replace("\\", "/")
         with tqdm(total=os.stat(local_path).st_size, unit='B', unit_scale=True, desc=local_path) as progress_bar:
             sftp.put(local_path, remote_path,
                      callback=(lambda transferred, total: progress_bar.update(transferred - progress_bar.n)))
         print("\nFile Sent...........")
     elif direction == "recv":
         # Download the file
-        file = source_path.split("/")[-1]
-        file_path = source_path.strip(file)
-        remote_path = os.path.join(file_path, file)
-        local_path = os.path.join(destination_path, file)
+        file = os.path.basename(source_path)
+        file_path = os.path.dirname(source_path).replace("\\", "/")
+        remote_path = os.path.join(file_path, file).replace("\\", "/")
+        local_path = os.path.join(destination_path, file).replace("\\", "/")
         # Get the size of the remote file
         remote_size = sftp.stat(remote_path).st_size
         with tqdm(total=remote_size, unit='B', unit_scale=True, desc=remote_path) as progress_bar:
